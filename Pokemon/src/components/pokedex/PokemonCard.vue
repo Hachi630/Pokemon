@@ -73,38 +73,62 @@ const formatStatName = (statName) => {
 }
 </script>
 
+// ... existing code ...
+
 <style scoped>
 .pokemon-card {
-  width: 250px;
-  margin: 10px;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .pokemon-image {
   text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
 }
 
 .pokemon-image img {
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
 }
 
 .pokemon-name {
   text-align: center;
-  margin: 10px 0;
+  margin: 15px 0;
+  font-size: 1.4em;
+  color: #2c3e50;
+  font-weight: bold;
 }
 
 .pokemon-types {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  padding: 0 10px;
 }
 
 .pokemon-stats {
-  font-size: 0.9em;
+  font-size: 1em;
+  padding: 15px;
+  background-color: #f8f9fa;
 }
 
 .stat {
-  margin: 4px 0;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  color: #4a5568;
 }
 </style>

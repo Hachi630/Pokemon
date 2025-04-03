@@ -1,19 +1,23 @@
 <template>
   <div class="search-bar">
     <n-input-group>
-        <n-input
-            v-model="searchQuery"
-            placeholder="输入宝可梦名称搜索..."
-            @keyup.enter="handleSearch"
-            > 
-            <template #prefix>
-          <n-icon><search /></n-icon>
+      <n-input
+        :value="searchQuery"
+        @update:value="searchQuery = $event"
+        placeholder="输入宝可梦名称搜索..."
+        @keyup.enter="handleSearch"
+      >
+        <template #prefix>
+          <n-icon><Search /></n-icon>
         </template>
       </n-input>
       <n-button type="primary" @click="handleSearch">
         搜索
       </n-button>
     </n-input-group>
+    <div class="debug-info">
+      当前输入值: {{ searchQuery }}
+    </div>
   </div>
 </template>
 
@@ -26,14 +30,22 @@ const searchQuery = ref('')
 const emit = defineEmits(['search'])
 
 const handleSearch = () => {
-  emit('search', searchQuery.value)
+  console.log('当前搜索值:', searchQuery.value)
+  if (searchQuery.value && searchQuery.value.trim()) {
+    emit('search', searchQuery.value.trim())
+  }
 }
 </script>
 
 <style scoped>
 .search-bar {
-  margin: 20px 0;
-  max-width: 500px;
   margin: 20px auto;
+  max-width: 500px;
+}
+
+.debug-info {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666;
 }
 </style>

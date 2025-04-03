@@ -4,44 +4,78 @@
       <h1>宝可梦图鉴</h1>
       <search-bar @search="handleSearch" />
       
-      <div class="pokemon-grid">
-        <pokemon-card
-          v-for="pokemon in pokemonList"
-          :key="pokemon.id"
-          :pokemon="pokemon"
-        />
-      </div>
+      <n-spin :show="loading">
+        <div class="pokemon-grid" v-if="pokemonList.length > 0">
+          <pokemon-card
+            v-for="pokemon in pokemonList"
+            :key="pokemon.id"
+            :pokemon="pokemon"
+          />
+        </div>
+        <div v-else class="no-results">
+          未找到宝可梦
+        </div>
+      </n-spin>
 
-      <div class="pagination">
+      <div class="pagination" v-if="totalCount > pageSize">
         <n-pagination
-            v-model="currentPage"
+          v-model:page="currentPage"
           :page-size="pageSize"
           :item-count="totalCount"
           @update:page="handlePageChange"
         />
       </div>
-
-      <n-spin :show="loading" description="加载中...">
-        <template #description>
-          <span>正在获取宝可梦数据...</span>
-        </template>
-      </n-spin>
     </n-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { NCard, NPagination, NSpin } from 'naive-ui'
+import { NCard, NPagination, NSpin, useMessage } from 'naive-ui'
 import PokemonCard from '../components/pokedex/PokemonCard.vue'
 import SearchBar from '../components/pokedex/SearchBar.vue'
 import { pokeApi } from '../api/pokeapi'
 
+const message = useMessage()
 const pokemonList = ref([])
 const currentPage = ref(1)
 const pageSize = ref(20)
 const totalCount = ref(0)
 const loading = ref(false)
+
+const handleSearch = async (query) => {
+  console.log('接收到搜索请求:', query)
+  
+  if (!query || query.trim() === '') {
+    message.warning('请输入宝可梦名称')
+    return
+  }
+
+  loading.value = true
+  message.info('正在搜索: ' + query)
+  
+  try {
+    const searchTerm = query.trim().toLowerCase()
+    console.log('发送搜索请求:', searchTerm)
+    
+    const response = await pokeApi.getPokemonDetail(searchTerm)
+    console.log('搜索响应:', response)
+    
+    if (response.data) {
+      pokemonList.value = [response.data]
+      totalCount.value = 1
+      currentPage.value = 1
+      message.success('找到宝可梦: ' + response.data.name)
+    }
+  } catch (error) {
+    console.error('搜索失败:', error)
+    message.error('未找到该宝可梦，请检查名称是否正确')
+    pokemonList.value = []
+    totalCount.value = 0
+  } finally {
+    loading.value = false
+  }
+}
 
 const fetchPokemonList = async () => {
   loading.value = true
@@ -57,8 +91,10 @@ const fetchPokemonList = async () => {
     )
     
     pokemonList.value = pokemonDetails.map(response => response.data)
+    message.success('加载成功')
   } catch (error) {
-    console.error('获取宝可梦列表失败:', error)
+    console.error('获取列表失败:', error)
+    message.error('获取宝可梦列表失败')
   } finally {
     loading.value = false
   }
@@ -69,54 +105,43 @@ const handlePageChange = (page) => {
   fetchPokemonList()
 }
 
-const handleSearch = async (query) => {
-  if (!query) {
-    fetchPokemonList()
-    return
-  }
-  
-  loading.value = true
-  try {
-    const response = await pokeApi.getPokemonDetail(query.toLowerCase())
-    pokemonList.value = [response.data]
-    totalCount.value = 1
-    currentPage.value = 1
-  } catch (error) {
-    console.error('搜索宝可梦失败:', error)
-    pokemonList.value = []
-    totalCount.value = 0
-  } finally {
-    loading.value = false
-  }
-}
-
 onMounted(() => {
+  console.log('组件挂载，开始获取数据')
   fetchPokemonList()
 })
 </script>
 
 <style scoped>
 .pokedex {
+  min-height: 100vh;
   padding: 20px;
-  max-width: 1200px;
+  background-color: #f5f5f5;
+}
+
+.pokedex-card {
+  height: 100%;
   margin: 0 auto;
+  max-width: 1600px;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 20px;
+  color: #2c3e50;
 }
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   margin: 20px 0;
+  padding: 0 10px;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
   margin: 20px 0;
+  padding: 10px;
 }
 </style>
